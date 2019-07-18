@@ -42,11 +42,11 @@ Requires:       %{name} = %{version}-%{release}
 %description doc
 Documentation files for %{name}.
 
-%package     -n gmock
+%package     -n libgmock
 Summary:        Google C++ Mocking Framework
 Requires:       %{name} = %{version}-%{release}
 
-%description -n gmock
+%description -n libgmock
 Inspired by jMock, EasyMock, and Hamcrest, and designed with C++s
 specifics in mind, Google C++ Mocking Framework (or Google Mock for
 short) is a library for writing and using C++ mock classes.
@@ -61,19 +61,19 @@ Google Mock:
  o works on Linux, Mac OS X, Windows, Windows Mobile, minGW, and
    Symbian.
 
-%package     -n gmock-devel
-Summary:        Development files for gmock
-Requires:       gmock = %{version}-%{release}
+%package     -n libgmock-devel
+Summary:        Development files for libgmock
+Requires:       libgmock = %{version}-%{release}
 
-%description -n gmock-devel
-This package contains development files for gmock.
+%description -n libgmock-devel
+This package contains development files for libgmock.
 
-%package     -n gmock-doc
+%package     -n libgmock-doc
 Summary:        gtest documentation
-Requires:       gmock = %{version}-%{release}
+Requires:       libgmock = %{version}-%{release}
 
-%description -n gmock-doc
-Documentation files for gmock.
+%description -n libgmock-doc
+Documentation files for libgmock.
 
 %prep
 %setup -q -n %{name}-%{version}/%{name}
@@ -98,8 +98,8 @@ sed -e "s/set(GOOGLETEST_VERSION .*)/set(GOOGLETEST_VERSION %{version})/" -i CMa
 %post -p /sbin/ldconfig
 %postun -p /sbin/ldconfig
 
-%post -n gmock -p /sbin/ldconfig
-%postun -n gmock -p /sbin/ldconfig
+%post -n libgmock -p /sbin/ldconfig
+%postun -n libgmock -p /sbin/ldconfig
 
 %files
 %license googletest/LICENSE
@@ -119,19 +119,19 @@ sed -e "s/set(GOOGLETEST_VERSION .*)/set(GOOGLETEST_VERSION %{version})/" -i CMa
 %doc googletest/docs/
 %doc googletest/samples
 
-%files -n gmock
+%files -n libgmock
 %license googlemock/LICENSE
 %{_libdir}/libgmock.so.%{version}
 %{_libdir}/libgmock_main.so.%{version}
 
-%files -n gmock-devel
+%files -n libgmock-devel
 %{_includedir}/gmock/
 %{_libdir}/libgmock.so
 %{_libdir}/libgmock_main.so
 %{_libdir}/pkgconfig/gmock.pc
 %{_libdir}/pkgconfig/gmock_main.pc
 
-%files -n gmock-doc
+%files -n libgmock-doc
 %doc googlemock/{CHANGES,CONTRIBUTORS,README.md}
 %doc googlemock/docs/
 
