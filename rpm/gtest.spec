@@ -1,126 +1,137 @@
-#
-# spec file for package 
-#
-# Copyright (c) 2014 SUSE LINUX Products GmbH, Nuernberg, Germany.
-#
-# All modifications and additions to the file contributed by third parties
-# remain the property of their copyright owners, unless otherwise agreed
-# upon. The license for this file, and modifications and additions to the
-# file, is the same license as for the pristine package itself (unless the
-# license for the pristine package is not an Open Source License, in which
-# case the license is the MIT License). An "Open Source License" is a
-# license that conforms to the Open Source Definition (Version 1.9)
-# published by the Open Source Initiative.
-
-# Please submit bugfixes or comments via http://bugs.opensuse.org/
-#
-
+Summary:        Google C++ testing framework
 Name:           gtest
-Version:        1.7.0
-Release:        0
-License:        GPL-2.0+
-Summary:        Google C++ Testing Framework
-Url:            https://code.google.com/p/googletest
-Group:          Definition/Libraries/C and C++
-Source:         %{name}-%{version}.tar.bz2
-Patch0:         gtest-soname.patch
-
+Version:        1.8.1
+Release:        1
+# scripts/generator/* are ASL 2.0
+License:        BSD and ASL 2.0
+URL:            https://github.com/google/googletest
+Source0:        %{name}-%{version}.tar.gz
+# https://github.com/google/googletest/pull/967
+Patch0:         gtest-1.8.1-null-pointer.patch
+# https://github.com/google/googletest/pull/1839
+Patch1:         gtest-PR1839-Fix-Python3-support.patch
+# Fedora-specific patches
+## Set libversion for libraries to version of gtest
+Patch100:       gtest-1.8.1-libversion.patch
+## Add missing pkgconfig requires information to reflect reality
+Patch101:       gtest-1.8.1-add-missing-pkgconfig-requires.patch
+BuildRequires:  gcc
+BuildRequires:  gcc-c++
 BuildRequires:  cmake
-#BuildRequires:  gcc-c++
-#BuildRequires:  unzip
-BuildRequires:  python
-BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+BuildRequires:  python3-devel
 
 %description
-Google's framework for writing C++ tests on a variety of platforms (Linux, Mac
-OS X, Windows, Cygwin, Windows CE, and Symbian). Based on the xUnit
-architecture. Supports automatic test discovery, a rich set of assertions,
-user-defined assertions, death tests, fatal and non-fatal failures, value- and
-type-parameterized tests, various options for running the tests, and XML test
-report generation.
+Framework for writing C++ tests on a variety of platforms (GNU/Linux,
+Mac OS X, Windows, Windows CE, and Symbian). Based on the xUnit
+architecture. Supports automatic test discovery, a rich set of
+assertions, user-defined assertions, death tests, fatal and non-fatal
+failures, various options for running the tests, and XML test report
+generation.
 
-%package devel
-Summary: Devel files for Google C++ testing framework
-Group: Development/Libraries/C and C++
-Requires: libgtest0 = %{version}
-#BuildRequires: gcc-c++
+%package     devel
+Summary:        Development files for %{name}
+Requires:       %{name} = %{version}-%{release}
 
 %description devel
-Google's framework for writing C++ tests on a variety of platforms (Linux, Mac
-OS X, Windows, Cygwin, Windows CE, and Symbian). Based on the xUnit
-architecture. Supports automatic test discovery, a rich set of assertions,
-user-defined assertions, death tests, fatal and non-fatal failures, value- and
-type-parameterized tests, various options for running the tests, and XML test
-report generation.
+This package contains development files for %{name}.
 
-%package -n libgtest0
-Summary: Google C++ testing framework
-Group: Development/Libraries
+%package     doc
+Summary:        gtest documentation
+Requires:       %{name} = %{version}-%{release}
 
-%description -n libgtest0
-Google's framework for writing C++ tests on a variety of platforms (Linux, Mac
-OS X, Windows, Cygwin, Windows CE, and Symbian). Based on the xUnit
-architecture. Supports automatic test discovery, a rich set of assertions,
-user-defined assertions, death tests, fatal and non-fatal failures, value- and
-type-parameterized tests, various options for running the tests, and XML test
-report generation.
+%description doc
+Documentation files for %{name}.
+
+%package     -n gmock
+Summary:        Google C++ Mocking Framework
+Requires:       %{name} = %{version}-%{release}
+
+%description -n gmock
+Inspired by jMock, EasyMock, and Hamcrest, and designed with C++s
+specifics in mind, Google C++ Mocking Framework (or Google Mock for
+short) is a library for writing and using C++ mock classes.
+
+Google Mock:
+
+ o lets you create mock classes trivially using simple macros,
+ o supports a rich set of matchers and actions,
+ o handles unordered, partially ordered, or completely ordered
+   expectations,
+ o is extensible by users, and
+ o works on Linux, Mac OS X, Windows, Windows Mobile, minGW, and
+   Symbian.
+
+%package     -n gmock-devel
+Summary:        Development files for gmock
+Requires:       gmock = %{version}-%{release}
+
+%description -n gmock-devel
+This package contains development files for gmock.
+
+%package     -n gmock-doc
+Summary:        gtest documentation
+Requires:       gmock = %{version}-%{release}
+
+%description -n gmock-doc
+Documentation files for gmock.
 
 %prep
 %setup -q -n %{name}-%{version}/%{name}
+
 %patch0 -p1
+%patch1 -p1
+%patch100 -p1
+%patch101 -p1
+
+# Set the version correctly
+sed -e "s/set(GOOGLETEST_VERSION .*)/set(GOOGLETEST_VERSION %{version})/" -i CMakeLists.txt
+
 
 %build
-# this is odd but needed only to generate gtest-config.
-%configure
 %cmake -DBUILD_SHARED_LIBS=ON \
-       -DCMAKE_SKIP_BUILD_RPATH=TRUE \
-       -DPYTHON_EXECUTABLE=%{__python2} \
-       -Dgtest_build_tests=OFF
-
-make %{?_smp_mflags}
-
-#XXX: 13 tests are markede as failed but nmone of them run!
-# % check
-# LD_LIBRARY_PATH needed due to cmake_skip_rpath in %%build
-#pushd build
-#LD_LIBRARY_PATH=$RPM_BUILD_DIR/%{name}-%{version}/build make test
-#popd
-
+       -DPYTHON_EXECUTABLE=%{__python3} .
+%make_build
 
 %install
+%make_install
 
-# make install doesn't work anymore.
-# need to install them manually.
-install -d %{buildroot}{%{_includedir}/gtest{,/internal},%{_libdir}}
-# just for backward compatibility
-install -p -m 0755 libgtest.so.*.* libgtest_main.so.*.* %{buildroot}%{_libdir}/
-(cd %{buildroot}%{_libdir};
-ln -sf libgtest.so.*.* %{buildroot}%{_libdir}/libgtest.so
-ln -sf libgtest_main.so.*.* %{buildroot}%{_libdir}/libgtest_main.so
-)
-/sbin/ldconfig -n %{buildroot}%{_libdir}
-install -D -p -m 0755 scripts/gtest-config %{buildroot}%{_bindir}/gtest-config
-install -p -m 0644 include/gtest/*.h %{buildroot}%{_includedir}/gtest/
-install -p -m 0644 include/gtest/internal/*.h %{buildroot}%{_includedir}/gtest/internal/
-install -D -p -m 0644 m4/gtest.m4 %{buildroot}%{_datadir}/aclocal/gtest.m4
+%post -p /sbin/ldconfig
+%postun -p /sbin/ldconfig
 
-%post -n libgtest0 -p /sbin/ldconfig
-%postun -n libgtest0 -p /sbin/ldconfig
+%post -n gmock -p /sbin/ldconfig
+%postun -n gmock -p /sbin/ldconfig
 
-%files -n libgtest0
-%defattr(-,root,root)
-%doc LICENSE
-%{_libdir}/libgtest_main.so.0
-%{_libdir}/libgtest_main.so.0.0.0
-%{_libdir}/libgtest.so.0
-%{_libdir}/libgtest.so.0.0.0
+%files
+%license googletest/LICENSE
+%{_libdir}/libgtest.so.%{version}
+%{_libdir}/libgtest_main.so.%{version}
 
 %files devel
-%defattr(-,root,root,0755)
-%dir %{_datadir}/aclocal
 %{_includedir}/gtest/
-%{_bindir}/gtest-config
 %{_libdir}/libgtest.so
 %{_libdir}/libgtest_main.so
-%{_datadir}/aclocal/gtest.m4
+%{_libdir}/cmake/GTest/
+%{_libdir}/pkgconfig/gtest.pc
+%{_libdir}/pkgconfig/gtest_main.pc
+
+%files doc
+%doc googletest/{CHANGES,CONTRIBUTORS,README.md}
+%doc googletest/docs/
+%doc googletest/samples
+
+%files -n gmock
+%license googlemock/LICENSE
+%{_libdir}/libgmock.so.%{version}
+%{_libdir}/libgmock_main.so.%{version}
+
+%files -n gmock-devel
+%{_includedir}/gmock/
+%{_libdir}/libgmock.so
+%{_libdir}/libgmock_main.so
+%{_libdir}/pkgconfig/gmock.pc
+%{_libdir}/pkgconfig/gmock_main.pc
+
+%files -n gmock-doc
+%doc googlemock/{CHANGES,CONTRIBUTORS,README.md}
+%doc googlemock/docs/
 
