@@ -1,0 +1,149 @@
+From 149c0d24148da9a339d6c9d03e638a39c59731f6 Mon Sep 17 00:00:00 2001
+From: Peter Levine <plevine457@gmail.com>
+Date: Fri, 14 Sep 2018 19:40:51 -0400
+Subject: [PATCH] Fix Python3 support
+
+---
+ googletest/test/googletest-env-var-test.py          |  4 ++--
+ googletest/test/googletest-filter-unittest.py       | 13 ++++++++-----
+ googletest/test/googletest-output-test.py           |  2 +-
+ googletest/test/googletest-throw-on-failure-test.py |  2 +-
+ googletest/test/googletest-uninitialized-test.py    |  4 ++--
+ googletest/test/gtest_xml_output_unittest.py        |  3 ++-
+ googletest/test/gtest_xml_test_utils.py             |  2 +-
+ 7 files changed, 17 insertions(+), 13 deletions(-)
+
+diff --git a/googletest/test/googletest-env-var-test.py b/googletest/test/googletest-env-var-test.py
+index e1efeee1e..2f0e406af 100755
+--- a/googletest/test/googletest-env-var-test.py
++++ b/googletest/test/googletest-env-var-test.py
+@@ -45,8 +45,8 @@
+ 
+ def AssertEq(expected, actual):
+   if expected != actual:
+-    print 'Expected: %s' % (expected,)
+-    print '  Actual: %s' % (actual,)
++    print('Expected: %s' % (expected,))
++    print('  Actual: %s' % (actual,))
+     raise AssertionError
+ 
+ 
+diff --git a/googletest/test/googletest-filter-unittest.py b/googletest/test/googletest-filter-unittest.py
+index dc0b5bd9a..6b32f2d21 100755
+--- a/googletest/test/googletest-filter-unittest.py
++++ b/googletest/test/googletest-filter-unittest.py
+@@ -42,7 +42,10 @@
+ 
+ import os
+ import re
+-import sets
++try:
++  from sets import Set as set  # For Python 2.3 compatibility
++except ImportError:
++  pass
+ import sys
+ import gtest_test_utils
+ 
+@@ -57,7 +60,7 @@
+ if sys.executable:
+   os.environ['EMPTY_VAR'] = ''
+   child = gtest_test_utils.Subprocess(
+-      [sys.executable, '-c', 'import os; print \'EMPTY_VAR\' in os.environ'])
++      [sys.executable, '-c', 'import os; print(\'EMPTY_VAR\' in os.environ)'])
+   CAN_PASS_EMPTY_ENV = eval(child.output)
+ 
+ 
+@@ -72,7 +75,7 @@
+   os.environ['UNSET_VAR'] = 'X'
+   del os.environ['UNSET_VAR']
+   child = gtest_test_utils.Subprocess(
+-      [sys.executable, '-c', 'import os; print \'UNSET_VAR\' not in os.environ'
++      [sys.executable, '-c', 'import os; print(\'UNSET_VAR\' not in os.environ)'
+       ])
+   CAN_UNSET_ENV = eval(child.output)
+ 
+@@ -245,14 +248,14 @@ def AssertPartitionIsValid(self, set_var, list_of_sets):
+     for slice_var in list_of_sets:
+       full_partition.extend(slice_var)
+     self.assertEqual(len(set_var), len(full_partition))
+-    self.assertEqual(sets.Set(set_var), sets.Set(full_partition))
++    self.assertEqual(set(set_var), set(full_partition))
+ 
+   def AdjustForParameterizedTests(self, tests_to_run):
+     """Adjust tests_to_run in case value parameterized tests are disabled."""
+ 
+     global param_tests_present
+     if not param_tests_present:
+-      return list(sets.Set(tests_to_run) - sets.Set(PARAM_TESTS))
++      return list(set(tests_to_run) - set(PARAM_TESTS))
+     else:
+       return tests_to_run
+ 
+diff --git a/googletest/test/googletest-output-test.py b/googletest/test/googletest-output-test.py
+index 2d69e353a..1a9ee6e3b 100755
+--- a/googletest/test/googletest-output-test.py
++++ b/googletest/test/googletest-output-test.py
+@@ -287,7 +287,7 @@ def testOutput(self):
+     # sequences when we read the golden file irrespective of an operating
+     # system used. Therefore, we need to strip those \r's from newlines
+     # unconditionally.
+-    golden = ToUnixLineEnding(golden_file.read())
++    golden = ToUnixLineEnding(golden_file.read().decode())
+     golden_file.close()
+ 
+     # We want the test to pass regardless of certain features being
+diff --git a/googletest/test/googletest-throw-on-failure-test.py b/googletest/test/googletest-throw-on-failure-test.py
+index 46cb9f6da..204e43e79 100755
+--- a/googletest/test/googletest-throw-on-failure-test.py
++++ b/googletest/test/googletest-throw-on-failure-test.py
+@@ -68,7 +68,7 @@ def SetEnvVar(env_var, value):
+ def Run(command):
+   """Runs a command; returns True/False if its exit code is/isn't 0."""
+ 
+-  print 'Running "%s". . .' % ' '.join(command)
++  print('Running "%s". . .' % ' '.join(command))
+   p = gtest_test_utils.Subprocess(command)
+   return p.exited and p.exit_code == 0
+ 
+diff --git a/googletest/test/googletest-uninitialized-test.py b/googletest/test/googletest-uninitialized-test.py
+index 5b7d1e74f..69595a0dd 100755
+--- a/googletest/test/googletest-uninitialized-test.py
++++ b/googletest/test/googletest-uninitialized-test.py
+@@ -43,8 +43,8 @@ def Assert(condition):
+ 
+ def AssertEq(expected, actual):
+   if expected != actual:
+-    print 'Expected: %s' % (expected,)
+-    print '  Actual: %s' % (actual,)
++    print('Expected: %s' % (expected,))
++    print('  Actual: %s' % (actual,))
+     raise AssertionError
+ 
+ 
+diff --git a/googletest/test/gtest_xml_output_unittest.py b/googletest/test/gtest_xml_output_unittest.py
+index faedd4e6c..8669f19e5 100755
+--- a/googletest/test/gtest_xml_output_unittest.py
++++ b/googletest/test/gtest_xml_output_unittest.py
+@@ -266,7 +266,8 @@ def testDefaultOutputFile(self):
+         'gtest_no_test_unittest')
+     try:
+       os.remove(output_file)
+-    except OSError, e:
++    except OSError:
++      e = sys.exc_info()[1]
+       if e.errno != errno.ENOENT:
+         raise
+ 
+diff --git a/googletest/test/gtest_xml_test_utils.py b/googletest/test/gtest_xml_test_utils.py
+index 1e0358592..afcf55e0d 100755
+--- a/googletest/test/gtest_xml_test_utils.py
++++ b/googletest/test/gtest_xml_test_utils.py
+@@ -94,7 +94,7 @@ def AssertEquivalentNodes(self, expected_node, actual_node):
+     self.assertEquals(
+         len(expected_children), len(actual_children),
+         'number of child elements differ in element ' + actual_node.tagName)
+-    for child_id, child in expected_children.iteritems():
++    for child_id, child in expected_children.items():
+       self.assert_(child_id in actual_children,
+                    '<%s> is not in <%s> (in element %s)' %
+                    (child_id, actual_children, actual_node.tagName))
