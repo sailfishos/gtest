@@ -54,14 +54,14 @@ Google Mock:
 
 %package     -n gmock-devel
 Summary:        Development files for libgmock
-Requires:       libgmock = %{version}-%{release}
+Requires:       gmock = %{version}-%{release}
 
 %description -n gmock-devel
 This package contains development files for libgmock.
 
 %package     -n gmock-doc
 Summary:        gtest documentation
-Requires:       libgmock = %{version}-%{release}
+Requires:       gmock = %{version}-%{release}
 
 %description -n gmock-doc
 Documentation files for libgmock.
