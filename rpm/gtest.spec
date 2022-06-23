@@ -4,7 +4,7 @@ Version:        1.11.0
 Release:        1
 # scripts/generator/* are ASL 2.0
 License:        BSD and ASL 2.0
-URL:            https://github.com/google/googletest
+URL:            https://github.com/sailfishos/gtest
 Source0:        %{name}-%{version}.tar.gz
 BuildRequires:  gcc
 BuildRequires:  gcc-c++
