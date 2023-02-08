@@ -1,6 +1,6 @@
 Summary:        Google C++ testing framework
 Name:           gtest
-Version:        1.11.0
+Version:        1.13.0
 Release:        1
 # scripts/generator/* are ASL 2.0
 License:        BSD and ASL 2.0
