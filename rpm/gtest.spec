@@ -1,6 +1,6 @@
 Summary:        Google C++ testing framework
 Name:           gtest
-Version:        1.11.0
+Version:        1.17.0
 Release:        1
 # scripts/generator/* are ASL 2.0
 License:        BSD and ASL 2.0
@@ -71,11 +71,11 @@ Documentation files for libgmock.
 
 %build
 %cmake -DBUILD_SHARED_LIBS=ON \
-       -DPYTHON_EXECUTABLE=%{__python3} .
-%make_build
+       -DPYTHON_EXECUTABLE=%{__python3}
+%cmake_build
 
 %install
-%make_install
+%cmake_install
 
 %post -p /sbin/ldconfig
 %postun -p /sbin/ldconfig
